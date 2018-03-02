@@ -26,10 +26,10 @@ class MotionTracker {
 
 public:
     vector<Rect> boundingBoxes;
+    Mat thresh;
     MotionTracker(Mat);
     void setPrev(Mat);
     void setCurrent(Mat);
-    Mat getCurrent(void);
     void findBoundingBox(int,double);
     void update(Mat);
     bool compare();

@@ -32,7 +32,7 @@ void MotionTracker::setPrev(Mat prev){
     if (prev.channels()!=1){
         cvtColor(prev, prevFrame, CV_BGR2GRAY);
     } else {
-        prevFrame = prev;
+        prev.copyTo(prevFrame);
     }
 }
 
@@ -40,13 +40,9 @@ void MotionTracker::setCurrent(Mat curr){
     if (curr.channels()!=1){
         cvtColor(curr, currentFrame, CV_BGR2GRAY);
     } else {
-        currentFrame = curr;
+        curr.copyTo(currentFrame);
     }
     
-}
-
-Mat MotionTracker::getCurrent(void){
-    return currentFrame;
 }
 
 
@@ -61,7 +57,6 @@ void MotionTracker::update(Mat input) {
 
 void MotionTracker::findBoundingBox(int threshValue, double minArea) {
     backgroundSubtract();
-    Mat thresh;
     vector<vector<Point>> contours;
     vector<Vec4i> heirarchy;
     threshold(deltaFrame, thresh, threshValue, 255, CV_THRESH_BINARY);
