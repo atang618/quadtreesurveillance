@@ -60,17 +60,15 @@ void MotionTracker::findBoundingBox(int threshValue, double minArea) {
     vector<vector<Point>> contours;
     vector<Vec4i> heirarchy;
     threshold(deltaFrame, thresh, threshValue, 255, CV_THRESH_BINARY);
-    Mat element = getStructuringElement(MORPH_RECT, Size(9,9));
+    Mat element = getStructuringElement(MORPH_RECT, Size(15,15));
     dilate(thresh, thresh, element,Point(-1,-1),1);
     imshow("Thresh",thresh);
     findContours(thresh, contours, heirarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
     boundingBoxes.clear();
     for (int i = 0; i < contours.size(); i++) {
-        
-        if (contourArea(contours[i], false) < minArea){
-            continue;
-        }
-        boundingBoxes.push_back(boundingRect(contours[i]));
+        if (contourArea(contours[i], false) > minArea && (heirarchy[i][3] < 0)) {
+			boundingBoxes.push_back(boundingRect(contours[i]));
+		}
     }
 }
 

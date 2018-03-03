@@ -52,12 +52,12 @@ int main(int argc, const char * argv[]) {
     // KCF
 //    Ptr<Tracker> KCFTracker;
 //    KCFTracker = TrackerKCF::create();
-//    Rect2d KCFBox = roi;
+//	  Rect2d KCFBox = roi;
 //    KCFTracker->init(testFrame(roi), KCFBox);
-    
+	
     
     // Initialize Kalman Filter Tracker
-    TKalmanFilter kalmanTracker((roi.x + roi.width)/2, (roi.y + roi.height)/2,true);
+    TKalmanFilter kalmanTracker((roi.x + roi.width)/2, (roi.y + roi.height)/2,false);
     float u_estimate, v_estimate, u_predict, v_predict;
     Rect KFBox;
     
@@ -70,7 +70,7 @@ int main(int argc, const char * argv[]) {
         flip(bgrFrame, crop, 1);
         crop = crop(roi);
         BSTracker.update(crop);
-        BSTracker.findBoundingBox(10, 1000.0);
+        BSTracker.findBoundingBox(15, 1000.0);
         BSBox = BSTracker.boundingBoxes[0];
 //        KCFTracker->update(crop, KCFBox);
         u_estimate = (float) (BSBox.x + BSBox.width)/2;
@@ -80,7 +80,7 @@ int main(int argc, const char * argv[]) {
         KFBox.y = (int) v_estimate - BSBox.height/2;
         KFBox.width = BSBox.width;
         KFBox.height = BSBox.height;
-        rectangle(crop, KFBox, Scalar(0,0,255),3);
+
 //        rectangle(crop, KCFBox, Scalar(255,0,0),3);
         Mat structure = Mat::zeros(512, 512, CV_8UC1);
         for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
@@ -95,10 +95,11 @@ int main(int argc, const char * argv[]) {
             
             fillConvexPoly(structure, fillPoints, Scalar(255));
         }
-        Scalar mean, stddev;
-        meanStdDev(crop, mean, stddev);
-        cout << stddev << "\n";
-        qt_decomp(&crop, &structure, frameRect);
+
+		int newBytes = 262144;
+		qt_decomp(&crop, &structure, frameRect, &newBytes, 10);
+		cout << "QT Bytes : Original Bytes = " << to_string(double(newBytes)/262144.0) << "\n";
+        rectangle(crop, KFBox, Scalar(0,0,255),3);
         
         imshow("QT",structure);
         imshow("Test",crop);

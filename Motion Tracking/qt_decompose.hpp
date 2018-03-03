@@ -17,7 +17,8 @@
 using namespace std;
 using namespace cv;
 
-void qt_decomp(Mat* im, Mat* structure, Rect portion);
+void qt_decomp(Mat* im, Mat* structure, Rect portion, int* byteCount, double stdThresh);
 
 
 #endif /* qt_decompose_hpp */
+

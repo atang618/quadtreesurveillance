@@ -236,8 +236,15 @@
 		72A0B33B203F2F2200D16FAB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.0_1/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.0_1/lib;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/Cellar/opencv/3.4.0_1/include,
+					/usr/local/Cellar/opencv/3.4.1_1/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/Cellar/opencv/3.4.0_1/lib,
+					/usr/local/Cellar/opencv/3.4.1_1/lib,
+				);
 				OTHER_LDFLAGS = (
 					"-lopencv_calib3d",
 					"-lopencv_core",
@@ -264,8 +271,15 @@
 		72A0B33C203F2F2200D16FAB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.0_1/include;
-				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/opencv/3.4.0_1/lib;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/Cellar/opencv/3.4.0_1/include,
+					/usr/local/Cellar/opencv/3.4.1_1/include,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/Cellar/opencv/3.4.0_1/lib,
+					/usr/local/Cellar/opencv/3.4.1_1/lib,
+				);
 				OTHER_LDFLAGS = (
 					"-lopencv_calib3d",
 					"-lopencv_core",
