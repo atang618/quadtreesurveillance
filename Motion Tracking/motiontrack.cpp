@@ -66,6 +66,7 @@ void MotionTracker::findBoundingBox(int threshValue, double minArea) {
     findContours(thresh, contours, heirarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
     boundingBoxes.clear();
     for (int i = 0; i < contours.size(); i++) {
+        
         if (contourArea(contours[i], false) < minArea){
             continue;
         }
