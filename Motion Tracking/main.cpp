@@ -13,11 +13,13 @@
 #include "motiontrack.hpp"
 #include "kalman.hpp"
 #include "qt_decompose.hpp"
+#include "facedetect.hpp"
+
 
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
-    
+
     //  Open camera session
     VideoCapture stream1(0);
     if (!stream1.isOpened()) {std::cout << "Cannot open camera";}
@@ -61,7 +63,8 @@ int main(int argc, const char * argv[]) {
     float u_estimate, v_estimate, u_predict, v_predict;
     Rect KFBox;
     
-    // Initialize Quad Tree
+    // Initialize Face Detector
+    HaarDetector faceTracker("ALT");
 
     
     //  Stream until keypress
@@ -69,9 +72,11 @@ int main(int argc, const char * argv[]) {
         stream1.read(bgrFrame);
         flip(bgrFrame, crop, 1);
         crop = crop(roi);
-        BSTracker.update(crop);
-        BSTracker.findBoundingBox(15, 1000.0);
-        BSBox = BSTracker.boundingBoxes[0];
+//        BSTracker.update(crop);
+//        BSTracker.findBoundingBox(15, 1000.0);
+        faceTracker.detectFace(crop);
+        BSBox = faceTracker.faceBoxes[0];
+//        BSBox = BSTracker.boundingBoxes[0];
 //        KCFTracker->update(crop, KCFBox);
         u_estimate = (float) (BSBox.x + BSBox.width)/2;
         v_estimate = (float) (BSBox.y + BSBox.height)/2;
@@ -80,11 +85,15 @@ int main(int argc, const char * argv[]) {
         KFBox.y = (int) v_estimate - BSBox.height/2;
         KFBox.width = BSBox.width;
         KFBox.height = BSBox.height;
+        faceTracker.detectFace(crop);
 
 //        rectangle(crop, KCFBox, Scalar(255,0,0),3);
         Mat structure = Mat::zeros(512, 512, CV_8UC1);
-        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
-            Rect qtBox = BSTracker.boundingBoxes[i];
+//        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
+//            Rect qtBox = BSTracker.boundingBoxes[i];
+
+        for (int i = 0; i < faceTracker.faceBoxes.size(); i++) {
+            Rect qtBox = faceTracker.faceBoxes[i];
             rectangle(crop, qtBox, Scalar(0,255,0),3);
             
             vector<Point> fillPoints;

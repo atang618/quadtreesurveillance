@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		724CB309204B6AB90057F294 /* facedetect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 724CB307204B6AB90057F294 /* facedetect.cpp */; };
 		726835762041CA4D009DEE7A /* motiontrack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 726835742041CA4D009DEE7A /* motiontrack.cpp */; };
 		72A0B337203F2F2200D16FAB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 72A0B336203F2F2200D16FAB /* main.cpp */; };
 		72B1B10B2048FDC800AA39FA /* kalman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 72B1B1092048FDC800AA39FA /* kalman.cpp */; };
@@ -26,6 +27,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		724CB307204B6AB90057F294 /* facedetect.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = facedetect.cpp; sourceTree = "<group>"; };
+		724CB308204B6AB90057F294 /* facedetect.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = facedetect.hpp; sourceTree = "<group>"; };
 		726835742041CA4D009DEE7A /* motiontrack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = motiontrack.cpp; sourceTree = "<group>"; };
 		726835752041CA4D009DEE7A /* motiontrack.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = motiontrack.hpp; sourceTree = "<group>"; };
 		72A0B333203F2F2200D16FAB /* Motion Tracking */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Motion Tracking"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -73,6 +76,8 @@
 				72A0B336203F2F2200D16FAB /* main.cpp */,
 				726835742041CA4D009DEE7A /* motiontrack.cpp */,
 				726835752041CA4D009DEE7A /* motiontrack.hpp */,
+				724CB307204B6AB90057F294 /* facedetect.cpp */,
+				724CB308204B6AB90057F294 /* facedetect.hpp */,
 			);
 			path = "Motion Tracking";
 			sourceTree = "<group>";
@@ -136,6 +141,7 @@
 			files = (
 				72B1B10E2049ED9600AA39FA /* qt_decompose.cpp in Sources */,
 				72A0B337203F2F2200D16FAB /* main.cpp in Sources */,
+				724CB309204B6AB90057F294 /* facedetect.cpp in Sources */,
 				726835762041CA4D009DEE7A /* motiontrack.cpp in Sources */,
 				72B1B10B2048FDC800AA39FA /* kalman.cpp in Sources */,
 			);
