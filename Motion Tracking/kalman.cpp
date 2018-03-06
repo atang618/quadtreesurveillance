@@ -37,8 +37,8 @@ TKalmanFilter::TKalmanFilter(float InitPositionU,
         kalman.statePre.at<float>(5) = 0;
         setIdentity(kalman.measurementMatrix);
         setIdentity(kalman.processNoiseCov, Scalar::all(1e-4));
-        setIdentity(kalman.measurementNoiseCov, Scalar::all(10));
-        setIdentity(kalman.errorCovPost, Scalar::all(0.1));
+        setIdentity(kalman.measurementNoiseCov, Scalar::all(0.01));
+        setIdentity(kalman.errorCovPost, Scalar::all(10));
     } else {
         // Considering velocity
         // 4 dynamic parameters (u,v position and du, dv velocity) and 2 measurement parameters (u,v position)
@@ -57,8 +57,8 @@ TKalmanFilter::TKalmanFilter(float InitPositionU,
         kalman.statePre.at<float>(3) = 0;
         setIdentity(kalman.measurementMatrix);
         setIdentity(kalman.processNoiseCov, Scalar::all(1e-4));
-        setIdentity(kalman.measurementNoiseCov, Scalar::all(10));
-        setIdentity(kalman.errorCovPost, Scalar::all(0.1));
+        setIdentity(kalman.measurementNoiseCov, Scalar::all(1e-2));
+        setIdentity(kalman.errorCovPost, Scalar::all(1));
     }
     
 }

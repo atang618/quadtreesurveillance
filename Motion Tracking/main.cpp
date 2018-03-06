@@ -14,7 +14,7 @@
 #include "kalman.hpp"
 #include "qt_decompose.hpp"
 #include "facedetect.hpp"
-
+#include "motion_structure.hpp"
 
 using namespace cv;
 
@@ -59,41 +59,47 @@ int main(int argc, const char * argv[]) {
 	
     
     // Initialize Kalman Filter Tracker
-    TKalmanFilter kalmanTracker((roi.x + roi.width)/2, (roi.y + roi.height)/2,false);
+    TKalmanFilter kalmanTracker((roi.x + roi.width)/2, (roi.y + roi.height)/2,true);
     float u_estimate, v_estimate, u_predict, v_predict;
     Rect KFBox;
     
     // Initialize Face Detector
-    HaarDetector faceTracker("ALT");
-
+    //HaarDetector faceTracker("ALT");
+    
+    // Initialize Motion Struct
+    Mat structure = Mat::zeros(512, 512, CV_8UC1);
+    MotionStruct mStruct;
+    
     
     //  Stream until keypress
     while (true) {
         stream1.read(bgrFrame);
         flip(bgrFrame, crop, 1);
         crop = crop(roi);
-//        BSTracker.update(crop);
-//        BSTracker.findBoundingBox(15, 1000.0);
-        faceTracker.detectFace(crop);
-        BSBox = faceTracker.faceBoxes[0];
-//        BSBox = BSTracker.boundingBoxes[0];
+        BSTracker.update(crop);
+        BSTracker.findBoundingBox(25, 1000.0);
+//        faceTracker.detectFace(crop);
+//        BSBox = faceTracker.faceBoxes[0];
+        BSBox = BSTracker.boundingBoxes[0];
 //        KCFTracker->update(crop, KCFBox);
-        u_estimate = (float) (BSBox.x + BSBox.width)/2;
-        v_estimate = (float) (BSBox.y + BSBox.height)/2;
+        
+        // Kalman Filter
+        u_estimate = (float) (BSBox.x + BSBox.width/2);
+        v_estimate = (float) (BSBox.y + BSBox.height/2);
         kalmanTracker.KalmanTracking(&u_estimate, &v_estimate, &u_predict, &v_predict);
-        KFBox.x = (int) u_estimate - BSBox.width/2;
-        KFBox.y = (int) v_estimate - BSBox.height/2;
+        KFBox.x = (int) (u_estimate - BSBox.width/2);
+        KFBox.y = (int) (v_estimate - BSBox.height/2);
         KFBox.width = BSBox.width;
         KFBox.height = BSBox.height;
-        faceTracker.detectFace(crop);
+//        faceTracker.detectFace(crop);
 
 //        rectangle(crop, KCFBox, Scalar(255,0,0),3);
-        Mat structure = Mat::zeros(512, 512, CV_8UC1);
-//        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
-//            Rect qtBox = BSTracker.boundingBoxes[i];
+        structure = Mat::zeros(512, 512, CV_8UC1);
+        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
+            Rect qtBox = BSTracker.boundingBoxes[i];
 
-        for (int i = 0; i < faceTracker.faceBoxes.size(); i++) {
-            Rect qtBox = faceTracker.faceBoxes[i];
+//        for (int i = 0; i < faceTracker.faceBoxes.size(); i++) {
+//            Rect qtBox = faceTracker.faceBoxes[i];
             rectangle(crop, qtBox, Scalar(0,255,0),3);
             
             vector<Point> fillPoints;
@@ -105,6 +111,12 @@ int main(int argc, const char * argv[]) {
             fillConvexPoly(structure, fillPoints, Scalar(255));
         }
 
+        
+        threshold(structure, structure, 100, 255, CV_THRESH_BINARY);
+        mStruct.update(structure);
+        structure = mStruct.compareStructs();
+        imshow("",structure);
+        
 		int newBytes = 262144;
 		qt_decomp(&crop, &structure, frameRect, &newBytes, 10);
 		cout << "QT Bytes : Original Bytes = " << to_string(double(newBytes)/262144.0) << "\n";
