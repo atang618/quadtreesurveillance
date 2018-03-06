@@ -22,12 +22,16 @@ class TKalmanFilter {
     KalmanFilter kalman;
     Mat_<float> measurement;
     bool acceleration;
+    float maxDist;
+    float lastU;
+    float lastV;
     
 public:
     TKalmanFilter(float InitPositionU,
                   float InitPositionV,
+                  float maxJump,
                   bool accel = false);
-    void KalmanTracking(float *PositionU_in_estimate,
+    int KalmanTracking(float *PositionU_in_estimate,
                         float *PositionV_in_estimate,
                         float *PositionU_predict,
                         float *PositionV_predict);

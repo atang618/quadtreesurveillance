@@ -10,9 +10,10 @@
 
 TKalmanFilter::TKalmanFilter(float InitPositionU,
                              float InitPositionV,
+                             float maxJump,
                              bool accel
                              )
-: acceleration(accel), measurement(2,1), kalman(accel ? 6 : 4, 2, 0)
+: acceleration(accel), measurement(2,1), kalman(accel ? 6 : 4, 2, 0), maxDist(maxJump), lastU(InitPositionU), lastV(InitPositionV)
 {
     if (acceleration) {
         // Considering acceleration
@@ -63,11 +64,12 @@ TKalmanFilter::TKalmanFilter(float InitPositionU,
     
 }
 
-void TKalmanFilter::KalmanTracking(float *PositionU_in_estimate,
+int TKalmanFilter::KalmanTracking(float *PositionU_in_estimate,
                                    float *PositionV_in_estimate,
                                    float *PositionU_predict,
                                    float *PositionV_predict)
 {
+    bool lost = false;
     Mat predict = kalman.predict(); // Kalman prediction
     (*PositionU_predict) = predict.at<float>(0); // Copy the predicted values
     (*PositionV_predict) = predict.at<float>(1);
@@ -79,4 +81,18 @@ void TKalmanFilter::KalmanTracking(float *PositionU_in_estimate,
     
     (*PositionU_in_estimate) = estimate.at<float>(0); // Copy the estimated values
     (*PositionV_in_estimate) = estimate.at<float>(1);
+    
+    // check if Kalman Filter is lost
+    if (abs((*PositionU_in_estimate)-lastU) > maxDist ||
+        abs((*PositionV_in_estimate)-lastV) > maxDist){
+        lost = true;
+    }
+    
+    if (lost) {
+        return 0;
+    } else {
+        lastU = (*PositionU_in_estimate);
+        lastV = (*PositionV_in_estimate);
+        return 1;
+    }
 }

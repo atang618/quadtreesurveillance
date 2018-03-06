@@ -26,6 +26,8 @@ class MotionTracker {
 
 public:
     vector<Rect> boundingBoxes;
+    Rect largestBox;
+    double largestArea;
     Mat thresh;
     MotionTracker(Mat);
     void setPrev(Mat);
