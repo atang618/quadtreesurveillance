@@ -10,6 +10,8 @@
 		724CB309204B6AB90057F294 /* facedetect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 724CB307204B6AB90057F294 /* facedetect.cpp */; };
 		724CB30C204F27D60057F294 /* motion_structure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 724CB30A204F27D60057F294 /* motion_structure.cpp */; };
 		726835762041CA4D009DEE7A /* motiontrack.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 726835742041CA4D009DEE7A /* motiontrack.cpp */; };
+		726E57F620549A21005ED5D8 /* fhog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 726E57F020549A21005ED5D8 /* fhog.cpp */; };
+		726E57F720549A21005ED5D8 /* kcftracker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 726E57F220549A21005ED5D8 /* kcftracker.cpp */; };
 		72A0B337203F2F2200D16FAB /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 72A0B336203F2F2200D16FAB /* main.cpp */; };
 		72B1B10B2048FDC800AA39FA /* kalman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 72B1B1092048FDC800AA39FA /* kalman.cpp */; };
 		72B1B10E2049ED9600AA39FA /* qt_decompose.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 72B1B10C2049ED9600AA39FA /* qt_decompose.cpp */; };
@@ -34,6 +36,14 @@
 		724CB30B204F27D60057F294 /* motion_structure.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = motion_structure.hpp; sourceTree = "<group>"; };
 		726835742041CA4D009DEE7A /* motiontrack.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = motiontrack.cpp; sourceTree = "<group>"; };
 		726835752041CA4D009DEE7A /* motiontrack.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = motiontrack.hpp; sourceTree = "<group>"; };
+		726E57EF20549A21005ED5D8 /* ffttools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ffttools.hpp; sourceTree = "<group>"; };
+		726E57F020549A21005ED5D8 /* fhog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = fhog.cpp; sourceTree = "<group>"; };
+		726E57F120549A21005ED5D8 /* fhog.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = fhog.hpp; sourceTree = "<group>"; };
+		726E57F220549A21005ED5D8 /* kcftracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = kcftracker.cpp; sourceTree = "<group>"; };
+		726E57F320549A21005ED5D8 /* kcftracker.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = kcftracker.hpp; sourceTree = "<group>"; };
+		726E57F420549A21005ED5D8 /* labdata.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = labdata.hpp; sourceTree = "<group>"; };
+		726E57F520549A21005ED5D8 /* recttools.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = recttools.hpp; sourceTree = "<group>"; };
+		726E57F820549AA6005ED5D8 /* tracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tracker.h; sourceTree = "<group>"; };
 		72A0B333203F2F2200D16FAB /* Motion Tracking */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Motion Tracking"; sourceTree = BUILT_PRODUCTS_DIR; };
 		72A0B336203F2F2200D16FAB /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		72B1B1092048FDC800AA39FA /* kalman.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = kalman.cpp; sourceTree = "<group>"; };
@@ -72,6 +82,14 @@
 		72A0B335203F2F2200D16FAB /* Motion Tracking */ = {
 			isa = PBXGroup;
 			children = (
+				726E57F820549AA6005ED5D8 /* tracker.h */,
+				726E57EF20549A21005ED5D8 /* ffttools.hpp */,
+				726E57F020549A21005ED5D8 /* fhog.cpp */,
+				726E57F120549A21005ED5D8 /* fhog.hpp */,
+				726E57F220549A21005ED5D8 /* kcftracker.cpp */,
+				726E57F320549A21005ED5D8 /* kcftracker.hpp */,
+				726E57F420549A21005ED5D8 /* labdata.hpp */,
+				726E57F520549A21005ED5D8 /* recttools.hpp */,
 				724CB30A204F27D60057F294 /* motion_structure.cpp */,
 				724CB30B204F27D60057F294 /* motion_structure.hpp */,
 				72B1B10C2049ED9600AA39FA /* qt_decompose.cpp */,
@@ -149,7 +167,9 @@
 				72A0B337203F2F2200D16FAB /* main.cpp in Sources */,
 				724CB309204B6AB90057F294 /* facedetect.cpp in Sources */,
 				726835762041CA4D009DEE7A /* motiontrack.cpp in Sources */,
+				726E57F620549A21005ED5D8 /* fhog.cpp in Sources */,
 				72B1B10B2048FDC800AA39FA /* kalman.cpp in Sources */,
+				726E57F720549A21005ED5D8 /* kcftracker.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

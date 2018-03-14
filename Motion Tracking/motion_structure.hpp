@@ -19,14 +19,15 @@ using namespace std;
 using namespace cv;
 
 class MotionStruct {
-	Mat prevStruct;
-	Mat currStruct;
-	SimpleBlobDetector detector;
-	
+    static Mat prevStruct;
+    static Mat currStruct;
+    static Mat background;
+    
 public:
-	MotionStruct(void);
-	void update(Mat);
-	Mat compareStructs(void);
+    MotionStruct(Mat, Mat);
+    void update(Mat);
+    Mat generateStructs(Mat);
 };
+
 
 #endif /* motion_structure_hpp */

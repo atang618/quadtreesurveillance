@@ -13,6 +13,23 @@ Mat MotionTracker::deltaFrame;
 Mat MotionTracker::currentFrame;
 
 
+Point2d findCenter(Rect2d rect) {
+    Point2d result;
+    result.x = rect.x + rect.width/2;
+    result.y = rect.y + rect.height/2;
+    return result;
+}
+
+double findOverlap(Rect2d A, Rect2d B) {
+    // Returns the percent overlap
+    return ((A & B).area())/((A | B).area());
+}
+
+double findPercentIntersect(Rect2d A, Rect2d B) {
+    // Returns the overlap as fraction of A
+    return ((A & B).area())/(A.area());
+}
+    
 MotionTracker::MotionTracker(Mat init){
     if (init.channels()!=1){
         cvtColor(init, currentFrame, CV_BGR2GRAY);
@@ -55,29 +72,50 @@ void MotionTracker::update(Mat input) {
     }
 }
 
-void MotionTracker::findBoundingBox(int threshValue, double minArea) {
+void MotionTracker::findBoundingBox(int threshValue, int winSize, double minArea, double maxArea, double minDist) {
     backgroundSubtract();
     vector<vector<Point>> contours;
     vector<Vec4i> heirarchy;
     threshold(deltaFrame, thresh, threshValue, 255, CV_THRESH_BINARY);
-    Mat element = getStructuringElement(MORPH_RECT, Size(35,35));
-    dilate(thresh, thresh, element,Point(-1,-1),1);
+    Mat element = getStructuringElement(MORPH_RECT, Size(winSize,winSize));
+    dilate(thresh, thresh, element);
+//    dilate(thresh, thresh, element);
+//    erode(thresh, thresh, element);
+    
     imshow("Thresh",thresh);
     findContours(thresh, contours, heirarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE);
-    boundingBoxes.clear();
-    largestArea = minArea;
+    FSBoxes.clear();
+    vector<BBOX> potentialCandidates;
     double area;
     for (int i = 0; i < contours.size(); i++) {
         area = contourArea(contours[i],false);
         if (area > minArea && (heirarchy[i][3] < 0)) {
-			boundingBoxes.push_back(boundingRect(contours[i]));
+            BBOX tempBox;
+            tempBox.rect = boundingRect(contours[i]);
+            tempBox.center = findCenter(tempBox.rect);
+            potentialCandidates.push_back(tempBox);
 		}
-        if (i == 0 || area > largestArea) {
-            largestBox = boundingRect(contours[i]);
-            largestArea = area;
+    }
+    // Iteratively merge boxes with overlap or close to each other
+    bool fullymerged = false;
+    vector<BBOX> finalCandidates;
+    while (!fullymerged) {
+        fullymerged = mergeBoxes(potentialCandidates, &finalCandidates, minDist);
+        if (!fullymerged) {
+            potentialCandidates = finalCandidates;
+            finalCandidates.clear();
+        }
+    }
+    for (int i = 0; i < finalCandidates.size(); i++) {
+        // Avoid entire frame bounding boxes
+        if (finalCandidates[i].rect.area() < maxArea) {
+            Rect2d newCandidate;
+            newCandidate = finalCandidates[i].rect;
+            FSBoxes.push_back(newCandidate);
         }
     }
 }
+
 
 
 bool MotionTracker::compare(){
@@ -88,3 +126,29 @@ bool MotionTracker::compare(){
     }
 }
 
+bool MotionTracker::mergeBoxes(vector<BBOX> input, vector<BBOX>* output, double minDist) {
+    bool* coveredBoxes = (bool*) calloc(input.size(),sizeof(bool));
+    bool noOverlap = true;
+    for (int i = 0; i < input.size(); i++){
+        for (int j = 0; j < input.size(); j++){
+            if (j > i && !coveredBoxes[j]){
+                if ((input[i].rect & input[j].rect).area() > 0 || (norm(input[i].center - input[j].center) < minDist)) {
+                    BBOX newBox;
+                    newBox.rect = input[i].rect | input[j].rect;
+                    newBox.center = findCenter(newBox.rect);
+                    output->push_back(newBox);
+                    coveredBoxes[i] = true;
+                    coveredBoxes[j] = true;
+                    break;
+                    }
+                }
+        }
+        if (coveredBoxes[i]) {
+            noOverlap = false;
+        } else { // did not overlap with any other boxes
+            output->push_back(input[i]);
+        }
+    }
+    free(coveredBoxes);
+    return noOverlap;
+}
