@@ -34,7 +34,7 @@ struct COR {
 };
 
 struct TO {
-    KCFTracker tracker;
+    KCFTracker tracker = KCFTracker(true, true, true, true);
     Rect2d BBox;
     State state;
     vector<int> occludeTO;

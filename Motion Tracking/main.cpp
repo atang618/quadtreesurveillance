@@ -6,6 +6,7 @@
 //  Copyright © 2018 Allen Tang. All rights reserved.
 //
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <opencv2/opencv.hpp>
 #include <opencv2/tracking.hpp>
@@ -21,7 +22,7 @@
 #define WINSIZE 15
 #define MIN_AREA 1000
 #define MAX_AREA 25000
-#define MIN_SEP 30
+#define MIN_SEP 20
 #define MIN_OVERLAP 0.4
 #define COR_ENCLOSED 0.7
 #define TO_ENCLOSED 0.7
@@ -35,6 +36,8 @@ using namespace cv;
 
 int main(int argc, const char * argv[]) {
     clock_t start;
+//    ofstream res;
+//    res.open("PETS09-S2L1.txt");
     //  Open camera session
     //VideoCapture stream1(0);
     //VideoCapture stream1("../../../TestVideos/MOT16-01.mp4");
@@ -68,6 +71,7 @@ int main(int argc, const char * argv[]) {
     // Initialize Motion Trackers
     // Frame Subtraction
     MotionTracker BSTracker(testFrame(roi));
+    //MotionTracker BSTracker(testFrame);
     
     // KCF
     vector<COR> candidates;
@@ -79,17 +83,23 @@ int main(int argc, const char * argv[]) {
     
     // Initialize Motion Struct
     MotionStruct mStruct(Mat::zeros(512, 512, CV_8UC1), Mat::zeros(512, 512, CV_8UC3));
-
+//    MotionStruct mStruct(Mat::zeros(rows, cols, CV_8UC1), Mat::zeros(rows, cols, CV_8UC3));
     
+    int imgInd = 0;
     
     //  Stream until keypress
     while (true) {
+        imgInd++;
         stream1.read(bgrFrame);
+        //stream1.read(crop);
+        if (bgrFrame.empty()){
+            break;
+        }
         start = clock();
         crop = bgrFrame(roi);
         Mat cropOrg = crop.clone();
         //Mat canvasCOR = crop.clone();
-        imshow("Original", crop);
+//        imshow("Original", crop);
         
         // Frame Subtraction
         BSTracker.update(crop);
@@ -98,6 +108,8 @@ int main(int argc, const char * argv[]) {
 
         // Background Subtraction
         Mat structure = Mat::zeros(512, 512, CV_8UC1);
+        //Mat structure = Mat::zeros(rows, cols, CV_8UC1);
+        
         for (int i = 0; i < BSTracker.FSBoxes.size(); i++){
             rectangle(structure, BSTracker.FSBoxes[i], Scalar(255),-1);
         }
@@ -338,6 +350,7 @@ int main(int argc, const char * argv[]) {
             //rectangle(crop, qtBox, Scalar(0,255,0),3);
         
         Mat finalStructure = Mat::zeros(512, 512, CV_8UC1);
+        //Mat finalStructure = Mat::zeros(rows, cols, CV_8UC1);
         for (int i = 0; i < trackedObj.size(); i++){
             rectangle(finalStructure, trackedObj[i].BBox, Scalar(255),-1);
         }
@@ -352,24 +365,47 @@ int main(int argc, const char * argv[]) {
         char str[200];
         sprintf(str,"QT:ORG = %f", double(newBytes)/262144.0);
         putText(crop, str, Point2f(10,20), FONT_HERSHEY_PLAIN, 1,  Scalar(0,0,255,255));
-        
+//
         sprintf(str,"FPS = %f", fps);
         putText(crop, str, Point2f(10,35), FONT_HERSHEY_PLAIN, 1, Scalar(0,0,255,255));
-        
-        // Draw KCF boxes in Green
+//
+        //Draw KCF boxes in Green
         for (int i = 0; i < trackedObj.size(); i++) {
             rectangle(crop, trackedObj[i].BBox, Scalar(0,255,0),2);
         }
-        // Draw BS boxes in Red
+        //Draw BS boxes in Red
         for (int i = 0; i < candidates.size(); i++){
             rectangle(crop, candidates[i].BBox, Scalar(0,0,255),1);
         }
-
-        imshow("Test",crop);
+        
+        Mat OrgAndTest = Mat::zeros(512, 512*2+10, CV_8UC3);
+        Rect org, test;
+        org.x = 0;
+        org.y = 0;
+        org.width = 512;
+        org.height = 512;
+        test.x = 522;
+        test.y = 0;
+        test.height = 512;
+        test.width = 512;
+        
+        bitwise_or(cropOrg, OrgAndTest(org), OrgAndTest(org));
+        bitwise_or(crop, OrgAndTest(test), OrgAndTest(test));
+//
+//        char str[200];
+//        for (int i = 0; i < trackedObj.size(); i++) {
+//            Rect2d box = trackedObj[i].BBox;
+//            sprintf(str, "%d,%d,%f,%f,%f,%f,-1,-1,-1,-1\n", imgInd, i, box.x, box.y, box.width, box.height);
+//            res << str;
+//        }
+        imshow("Test",OrgAndTest);
+//        char filename[200];
+//        sprintf(filename, "Img%d.jpg",imgInd);
+//        imwrite(filename, OrgAndTest);
         if (waitKey(30) >= 0) {break;}
     }
     
-    
+//    res.close();
     return 0;
 }
 
