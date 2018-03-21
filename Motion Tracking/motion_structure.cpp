@@ -35,12 +35,25 @@ Mat MotionStruct::generateStructs(Mat backgnd) {
         Mat element = getStructuringElement(MORPH_RECT, Size(10,10));
         dilate(currStruct,currStruct,element);
     } else if (nlabelsP > nlabelsC) {
-        for (int i = 1; i < nlabelsP; i++) {
+        for (int i = 0; i < nlabelsP; i++) {
             Rect roi;
-            roi.x = statsP.at<int>(1,CC_STAT_LEFT);
-            roi.y = statsP.at<int>(1,CC_STAT_TOP);
-            roi.width = statsP.at<int>(1,CC_STAT_WIDTH);
-            roi.height = statsP.at<int>(1,CC_STAT_HEIGHT);
+            roi.x = statsP.at<int>(i,CC_STAT_LEFT);
+            roi.y = statsP.at<int>(i,CC_STAT_TOP);
+//            if (roi.x > 10) {
+//                roi.x -= 10;
+//            }
+//            if (roi.y > 10) {
+//                roi.y -= 10;
+//            }
+            
+            roi.width = statsP.at<int>(i,CC_STAT_WIDTH);
+            roi.height = statsP.at<int>(i,CC_STAT_HEIGHT);
+//            if (roi.width + 30 > 512) {
+//                roi.width += 30;
+//            }
+//            if (roi.height + 30 > 512) {
+//                roi.height += 30;
+//            }
             
             
             //			Mat xorMat;
@@ -53,7 +66,7 @@ Mat MotionStruct::generateStructs(Mat backgnd) {
             cvtColor(backgnd, backgrayCurr, CV_BGR2GRAY);
             cvtColor(background, backgrayPrev, CV_BGR2GRAY);
             absdiff(backgrayCurr(roi), backgrayPrev(roi), backDiff);
-            threshold(backDiff, backDiff, 20, 255, CV_THRESH_BINARY); // 15
+            threshold(backDiff, backDiff, 15, 255, CV_THRESH_BINARY); // 15
             double avg = countNonZero(backDiff);
             cout << "\tBackground: " << avg/roi.area() << "\n";
             if (avg/roi.area() > 0.05) {
@@ -93,6 +106,6 @@ Mat MotionStruct::generateStructs(Mat backgnd) {
     bitwise_or(foregroundMask, background, background);
     imshow("Background",background);
     
-    imshow("Curr", currStruct);
+    //imshow("Curr", currStruct);
     return currStruct;
 }

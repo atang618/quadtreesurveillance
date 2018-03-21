@@ -21,8 +21,8 @@
 #define THRESH 15
 #define WINSIZE 15
 #define MIN_AREA 1000
-#define MAX_AREA 25000
-#define MIN_SEP 20
+#define MAX_AREA 25000 //100000
+#define MIN_SEP 25
 #define MIN_OVERLAP 0.4
 #define COR_ENCLOSED 0.7
 #define TO_ENCLOSED 0.7
@@ -30,19 +30,22 @@
 #define TOH 1.2
 #define CONS_FRAMES 7
 #define OVERLAP_FRAMES 2
-#define LOST_FRAMES 3
+#define LOST_FRAMES 0
 
 using namespace cv;
 
 int main(int argc, const char * argv[]) {
     clock_t start;
-//    ofstream res;
-//    res.open("PETS09-S2L1.txt");
+    //    ofstream res;
+    //    res.open("PETS09-S2L1.txt");
     //  Open camera session
     //VideoCapture stream1(0);
     //VideoCapture stream1("../../../TestVideos/MOT16-01.mp4");
     VideoCapture stream1("../../../TestVideos/PETS09-S2L1.mp4");
     //VideoCapture stream1("../../../TestVideos/SecCam2.avi");
+    //VideoCapture stream1("../../../TestVideos/sherbrooke_video.avi");
+    //VideoCapture stream1("../../../TestVideos/rouen_video.avi");
+    //VideoCapture stream1("../../../TestVideos/stmarc_video.avi");
     if (!stream1.isOpened()) {std::cout << "Cannot open video";}
     
     //  Get initial frame
@@ -83,14 +86,19 @@ int main(int argc, const char * argv[]) {
     
     // Initialize Motion Struct
     MotionStruct mStruct(Mat::zeros(512, 512, CV_8UC1), Mat::zeros(512, 512, CV_8UC3));
-//    MotionStruct mStruct(Mat::zeros(rows, cols, CV_8UC1), Mat::zeros(rows, cols, CV_8UC3));
+    //    MotionStruct mStruct(Mat::zeros(rows, cols, CV_8UC1), Mat::zeros(rows, cols, CV_8UC3));
     
     int imgInd = 0;
-    
+    int threshBB, motionstructBB;
     //  Stream until keypress
     while (true) {
+        threshBB = 0;
+        motionstructBB = 0;
         imgInd++;
         stream1.read(bgrFrame);
+//        if (imgInd < 400) {
+//            continue;
+//        }
         //stream1.read(crop);
         if (bgrFrame.empty()){
             break;
@@ -99,20 +107,23 @@ int main(int argc, const char * argv[]) {
         crop = bgrFrame(roi);
         Mat cropOrg = crop.clone();
         //Mat canvasCOR = crop.clone();
-//        imshow("Original", crop);
+        //        imshow("Original", crop);
         
         // Frame Subtraction
         BSTracker.update(crop);
         BSTracker.findBoundingBox(THRESH, WINSIZE, MIN_AREA, MAX_AREA, MIN_SEP);
         
-
+        
         // Background Subtraction
         Mat structure = Mat::zeros(512, 512, CV_8UC1);
+        Mat correctedStructure = Mat::zeros(512, 512, CV_8UC1);
         //Mat structure = Mat::zeros(rows, cols, CV_8UC1);
         
         for (int i = 0; i < BSTracker.FSBoxes.size(); i++){
             rectangle(structure, BSTracker.FSBoxes[i], Scalar(255),-1);
+            threshBB++;
         }
+        imshow("Thresh BB",structure);
         mStruct.update(structure);
         structure = mStruct.generateStructs(cropOrg);
         vector<vector<Point>> contours;
@@ -123,8 +134,12 @@ int main(int argc, const char * argv[]) {
         for (int i = 0; i < contours.size(); i++){
             COR newCandidate;
             newCandidate.BBox = boundingRect(contours[i]);
+            rectangle(correctedStructure, newCandidate.BBox, Scalar(255), -1);
+            motionstructBB++;
             candidates.push_back(newCandidate);
         }
+        
+        imshow("Motion Structure BB", correctedStructure);
         
         // Matching TO to COR
         if (trackedObj.size() == 0) {
@@ -132,8 +147,8 @@ int main(int argc, const char * argv[]) {
             for (int i = 0; i < candidates.size(); i++) {
                 TO newTracked;
                 newTracked.BBox = candidates[i].BBox;
-//                newTracked.tracker = TrackerKCF::create();
-//                newTracked.tracker->init(crop, newTracked.BBox);
+                //                newTracked.tracker = TrackerKCF::create();
+                //                newTracked.tracker->init(crop, newTracked.BBox);
                 newTracked.tracker.init(newTracked.BBox,crop);
                 newTracked.state = Tracked;
                 newTracked.matchedCOR = i;
@@ -145,7 +160,7 @@ int main(int argc, const char * argv[]) {
         } else {
             for (int i = 0; i < trackedObj.size(); i++) {
                 // Update each TO and assign states
-//                bool trackSuccess = trackedObj[i].tracker->update(crop,trackedObj[i].BBox);
+                //                bool trackSuccess = trackedObj[i].tracker->update(crop,trackedObj[i].BBox);
                 trackedObj[i].BBox = trackedObj[i].tracker.update(crop);
                 trackedObj[i].state = Lost; // Default is no COR match
                 // Compare with COR
@@ -192,10 +207,10 @@ int main(int argc, const char * argv[]) {
                     }
                     case Lost: {
                         // Remove the tracked object only if tracker has also failed
-//                        if (!trackSuccess) {
-//                            trackedObj.erase(trackedObj.begin() + i);
-//                        }
-
+                        //                        if (!trackSuccess) {
+                        //                            trackedObj.erase(trackedObj.begin() + i);
+                        //                        }
+                        
                         trackedObj[i].counterLOST++;
                         
                         break;
@@ -209,8 +224,8 @@ int main(int argc, const char * argv[]) {
                 if (candidates[i].matchedTO.size() == 0) {
                     TO newTracked;
                     newTracked.BBox = candidates[i].BBox;
-//                    newTracked.tracker = TrackerKCF::create();
-//                    newTracked.tracker->init(crop, newTracked.BBox);
+                    //                    newTracked.tracker = TrackerKCF::create();
+                    //                    newTracked.tracker->init(crop, newTracked.BBox);
                     newTracked.tracker.init(newTracked.BBox,crop);
                     newTracked.state = Tracked;
                     newTracked.matchedCOR = i;
@@ -262,41 +277,41 @@ int main(int argc, const char * argv[]) {
                     }
                 }
             }
-//            // Find the TOs that overlap with the original TO
-//            for (int i = 0; i < trackedObj.size(); i++) {
-//                for (int j = i+1; j < trackedObj.size(); j++){
-//                    Rect2d A = trackedObj[i].BBox;
-//                    Rect2d B = trackedObj[j].BBox;
-//                    // Check if there is overlap or close to each other
-//                    if ((A & B).area() > 0 || (norm(findCenter(A) - findCenter(B)) < MIN_SEP)) {
-//                        // Check if the TO has already overlapped before
-//                        bool existingOverlap = false;
-//                        for (int k = 0; k < trackedObj[i].overlapTO.size(); k++) {
-//                            if (trackedObj[i].overlapTO[k] == j){
-//                                trackedObj[j].counterOL++; // increment overlap counter
-//                                // if this pushes the counter over, delete this TO from the overlapTO queue
-//                                if (trackedObj[j].counterOL > CONS_FRAMES) {
-//                                    trackedObj[i].overlapTO.erase(trackedObj[i].overlapTO.begin()+k);
-//                                }
-//                                existingOverlap = true;
-//                                break;
-//                            }
-//                        }
-//                        if (!existingOverlap){
-//                            trackedObj[i].overlapTO.push_back(j);
-//                        }
-//                    } else {
-//                        // Remove the TO from overlap list if its there
-//                        for (int k = 0; k < trackedObj[i].overlapTO.size(); k++) {
-//                            if (trackedObj[i].overlapTO[k] == j){
-//                                trackedObj[i].overlapTO.erase(trackedObj[i].overlapTO.begin() + k); // remove the TO from the list
-//                                trackedObj[j].counterOL = 0; // reset overlap counter
-//                                break;
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            //            // Find the TOs that overlap with the original TO
+            //            for (int i = 0; i < trackedObj.size(); i++) {
+            //                for (int j = i+1; j < trackedObj.size(); j++){
+            //                    Rect2d A = trackedObj[i].BBox;
+            //                    Rect2d B = trackedObj[j].BBox;
+            //                    // Check if there is overlap or close to each other
+            //                    if ((A & B).area() > 0 || (norm(findCenter(A) - findCenter(B)) < MIN_SEP)) {
+            //                        // Check if the TO has already overlapped before
+            //                        bool existingOverlap = false;
+            //                        for (int k = 0; k < trackedObj[i].overlapTO.size(); k++) {
+            //                            if (trackedObj[i].overlapTO[k] == j){
+            //                                trackedObj[j].counterOL++; // increment overlap counter
+            //                                // if this pushes the counter over, delete this TO from the overlapTO queue
+            //                                if (trackedObj[j].counterOL > CONS_FRAMES) {
+            //                                    trackedObj[i].overlapTO.erase(trackedObj[i].overlapTO.begin()+k);
+            //                                }
+            //                                existingOverlap = true;
+            //                                break;
+            //                            }
+            //                        }
+            //                        if (!existingOverlap){
+            //                            trackedObj[i].overlapTO.push_back(j);
+            //                        }
+            //                    } else {
+            //                        // Remove the TO from overlap list if its there
+            //                        for (int k = 0; k < trackedObj[i].overlapTO.size(); k++) {
+            //                            if (trackedObj[i].overlapTO[k] == j){
+            //                                trackedObj[i].overlapTO.erase(trackedObj[i].overlapTO.begin() + k); // remove the TO from the list
+            //                                trackedObj[j].counterOL = 0; // reset overlap counter
+            //                                break;
+            //                            }
+            //                        }
+            //                    }
+            //                }
+            //            }
             
             //Delete KCF trackers that have overlapped or have been stationary for consecutive frames
             for (vector<TO>::iterator it = trackedObj.begin(); it != trackedObj.end();) {
@@ -308,53 +323,53 @@ int main(int argc, const char * argv[]) {
             }
         }
         
-//        if (!KCFTracking && BSTracker.largestArea > 3000 && BSTracker.largestArea < (350*350)) {
-//            KCFBox = BSBox;
-//            KCFTracker->init(crop, KCFBox);
-//            KCFTracking = true;
-//        } else if (KCFTracking) {
-//            KCFTracker->update(crop, KCFBox);
-//        } else {
-//            ;
-//        }
+        //        if (!KCFTracking && BSTracker.largestArea > 3000 && BSTracker.largestArea < (350*350)) {
+        //            KCFBox = BSBox;
+        //            KCFTracker->init(crop, KCFBox);
+        //            KCFTracking = true;
+        //        } else if (KCFTracking) {
+        //            KCFTracker->update(crop, KCFBox);
+        //        } else {
+        //            ;
+        //        }
         
         // Kalman Filter
-//        u_estimate = (float) (BSBox.x + BSBox.width/2);
-//        v_estimate = (float) (BSBox.y + BSBox.height/2);
-//        kalmanTracker.KalmanTracking(&u_estimate, &v_estimate, &u_predict, &v_predict);
-//        KFBox.x = (int) u_estimate - BSBox.width/2;
-//        KFBox.y = (int) v_estimate - BSBox.height/2;
-//        KFBox.width = BSBox.width;
-//        KFBox.height = BSBox.height;
-
-//        if (kalmanTracker.KalmanTracking(&u_estimate, &v_estimate, &u_predict, &v_predict)) {
-//                // If the KF filter is not lost, update KFBox
-//                KFBox.x = (int) (u_estimate - BSBox.width/2);
-//                KFBox.y = (int) (v_estimate - BSBox.height/2);
-//                KFBox.width = BSBox.width;
-//                KFBox.height = BSBox.height;
-//        } else {
-//                // If lost, keep previous box
-//                KFBox = prevKFBox; 
-//        }
-
-//        faceTracker.detectFace(crop);
-
-
-
-//        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
-//            Rect qtBox = BSTracker.boundingBoxes[i];
-
-//        for (int i = 0; i < faceTracker.faceBoxes.size(); i++) {
-//            Rect qtBox = faceTracker.faceBoxes[i];
-            //rectangle(crop, qtBox, Scalar(0,255,0),3);
+        //        u_estimate = (float) (BSBox.x + BSBox.width/2);
+        //        v_estimate = (float) (BSBox.y + BSBox.height/2);
+        //        kalmanTracker.KalmanTracking(&u_estimate, &v_estimate, &u_predict, &v_predict);
+        //        KFBox.x = (int) u_estimate - BSBox.width/2;
+        //        KFBox.y = (int) v_estimate - BSBox.height/2;
+        //        KFBox.width = BSBox.width;
+        //        KFBox.height = BSBox.height;
+        
+        //        if (kalmanTracker.KalmanTracking(&u_estimate, &v_estimate, &u_predict, &v_predict)) {
+        //                // If the KF filter is not lost, update KFBox
+        //                KFBox.x = (int) (u_estimate - BSBox.width/2);
+        //                KFBox.y = (int) (v_estimate - BSBox.height/2);
+        //                KFBox.width = BSBox.width;
+        //                KFBox.height = BSBox.height;
+        //        } else {
+        //                // If lost, keep previous box
+        //                KFBox = prevKFBox;
+        //        }
+        
+        //        faceTracker.detectFace(crop);
+        
+        
+        
+        //        for (int i = 0; i < BSTracker.boundingBoxes.size(); i++) {
+        //            Rect qtBox = BSTracker.boundingBoxes[i];
+        
+        //        for (int i = 0; i < faceTracker.faceBoxes.size(); i++) {
+        //            Rect qtBox = faceTracker.faceBoxes[i];
+        //rectangle(crop, qtBox, Scalar(0,255,0),3);
         
         Mat finalStructure = Mat::zeros(512, 512, CV_8UC1);
         //Mat finalStructure = Mat::zeros(rows, cols, CV_8UC1);
         for (int i = 0; i < trackedObj.size(); i++){
             rectangle(finalStructure, trackedObj[i].BBox, Scalar(255),-1);
         }
-                      
+        
         int newBytes = 262144;
         qt_decomp(&crop, &finalStructure, frameRect, &newBytes, 10);
         
@@ -365,10 +380,10 @@ int main(int argc, const char * argv[]) {
         char str[200];
         sprintf(str,"QT:ORG = %f", double(newBytes)/262144.0);
         putText(crop, str, Point2f(10,20), FONT_HERSHEY_PLAIN, 1,  Scalar(0,0,255,255));
-//
+        //
         sprintf(str,"FPS = %f", fps);
         putText(crop, str, Point2f(10,35), FONT_HERSHEY_PLAIN, 1, Scalar(0,0,255,255));
-//
+        //
         //Draw KCF boxes in Green
         for (int i = 0; i < trackedObj.size(); i++) {
             rectangle(crop, trackedObj[i].BBox, Scalar(0,255,0),2);
@@ -377,7 +392,7 @@ int main(int argc, const char * argv[]) {
         for (int i = 0; i < candidates.size(); i++){
             rectangle(crop, candidates[i].BBox, Scalar(0,0,255),1);
         }
-        
+
         Mat OrgAndTest = Mat::zeros(512, 512*2+10, CV_8UC3);
         Rect org, test;
         org.x = 0;
@@ -388,24 +403,27 @@ int main(int argc, const char * argv[]) {
         test.y = 0;
         test.height = 512;
         test.width = 512;
-        
+
         bitwise_or(cropOrg, OrgAndTest(org), OrgAndTest(org));
         bitwise_or(crop, OrgAndTest(test), OrgAndTest(test));
-//
-//        char str[200];
-//        for (int i = 0; i < trackedObj.size(); i++) {
-//            Rect2d box = trackedObj[i].BBox;
-//            sprintf(str, "%d,%d,%f,%f,%f,%f,-1,-1,-1,-1\n", imgInd, i, box.x, box.y, box.width, box.height);
-//            res << str;
+//        //
+//        //        char str[200];
+//        //        for (int i = 0; i < trackedObj.size(); i++) {
+//        //            Rect2d box = trackedObj[i].BBox;
+//        //            sprintf(str, "%d,%d,%f,%f,%f,%f,-1,-1,-1,-1\n", imgInd, i, box.x, box.y, box.width, box.height);
+//        //            res << str;
+//        //        }
+        imshow("Test",crop);
+//                char filename[200];
+//                sprintf(filename, "Img%d.jpg",imgInd);
+//                imwrite(filename, crop);
+//        if (motionstructBB > threshBB) {
+//            ;
 //        }
-        imshow("Test",OrgAndTest);
-//        char filename[200];
-//        sprintf(filename, "Img%d.jpg",imgInd);
-//        imwrite(filename, OrgAndTest);
         if (waitKey(30) >= 0) {break;}
     }
     
-//    res.close();
+    //    res.close();
     return 0;
 }
 
